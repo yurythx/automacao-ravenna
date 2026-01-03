@@ -1,0 +1,103 @@
+services:
+  base: &base
+    image: chatwoot/chatwoot:v4.8.0
+    profiles: ["donotstart"]
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+    volumes:
+      - chatwoot_data:/app/storage
+    networks:
+      - stack_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web:
+    <<: *base
+    profiles: []
+    container_name: chatwoot_web
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    entrypoint: docker/entrypoints/rails.sh
+    command: ['sh', '-c', 'bundle exec rails db:prepare && bundle exec rails s -p 3000 -b 0.0.0.0']
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  worker:
+    <<: *base
+    profiles: []
+    container_name: chatwoot_worker
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: chatwoot_db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chatwoot_production
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - stack_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: chatwoot_redis
+    restart: always
+    command: ["redis-server", "--requirepass", "redis"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - stack_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  stack_network:
+    external: true
+
+volumes:
+  chatwoot_data:
+  postgres_data:
+  redis_data:

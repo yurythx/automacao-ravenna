@@ -1,0 +1,1 @@
+MinIO storage test file from automated script.

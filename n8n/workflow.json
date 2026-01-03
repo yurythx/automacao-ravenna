@@ -1,0 +1,924 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "n8n",
+        "options": {}
+      },
+      "id": "a1b67e12-37b8-4d85-87bb-6e81dc7848d2",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2688,
+        144
+      ],
+      "webhookId": "00000000-0000-0000-0000-000000000010"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.message_type }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "incoming"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3c3f4138-72b2-4f88-8793-38d28b78398a",
+      "name": "É Incoming?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2512,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "account.id",
+              "value": "={{ $json.body.messages[0].account_id }}",
+              "type": "number",
+              "id": "f47008e8-b891-448a-ac45-d58c431185f4"
+            },
+            {
+              "name": "conversation.id",
+              "value": "={{ $json.body.messages[0].conversation_id }}",
+              "type": "number",
+              "id": "b3925180-b437-46ba-8f6f-1bc16ef37ce0"
+            },
+            {
+              "name": "message.id",
+              "value": "={{ $json.body.messages[0].id }}",
+              "type": "number",
+              "id": "ba8f67a9-c0e9-4921-a646-f746dbd6332b"
+            },
+            {
+              "name": "content.body",
+              "value": "={{ ($json.body.messages[0].content || '').trim() }}",
+              "type": "string",
+              "id": "e23940e0-3041-4ed9-a7fa-109a8abdefa0"
+            },
+            {
+              "name": "sender.name",
+              "value": "={{ $json.body.messages[0].sender.name }}",
+              "type": "string",
+              "id": "f9b7c592-28a3-44db-958b-1ac23059bdbf"
+            },
+            {
+              "name": "chatwoot",
+              "value": "=https://atendimento.projetohavoc.shop/",
+              "type": "string",
+              "id": "a15f25e7-6ddb-4041-a407-aa6e7e2f42f6"
+            },
+            {
+              "name": "redis.state.key",
+              "value": "={{ `chatwoot:conv:${$json.body.messages[0].conversation_id}:state` }}",
+              "type": "string",
+              "id": "33b905be-a68b-44a7-b8f0-0c42113b1301"
+            },
+            {
+              "name": "redis.processed.key",
+              "value": "={{ `chatwoot:conv:${$json.body.messages[0].conversation_id}:processed:${$json.body.messages[0].id}` }}",
+              "type": "string",
+              "id": "77f10952-4a98-4674-8523-9e52a6272542"
+            },
+            {
+              "name": "redis.category.key",
+              "value": "={{ `chatwoot:conv:${$json.body.messages[0].conversation_id}:category` }}",
+              "type": "string",
+              "id": "bc201902-27cf-4caa-9fef-2d15e94fd3b4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4b4c6a0d-5010-4ae5-a48e-dabe49b2d1b7",
+      "name": "Mapear Variáveis",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2304,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": [
+                {
+                  "leftValue": "={{ $json['content.body'].toLowerCase() }}",
+                  "rightValue": "menu"
+                }
+              ]
+            },
+            {
+              "conditions": [
+                {
+                  "leftValue": "={{ $json['content.body'].toLowerCase() }}",
+                  "rightValue": "voltar"
+                }
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e69fdf7b-32d8-48a3-8ee7-9dbf3d40c829",
+      "name": "Switch: Comando",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -2112,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $json['redis.processed.key'] }}",
+        "options": {}
+      },
+      "id": "77386ed6-6a6b-49e1-8068-bd2b1f1aed5a",
+      "name": "Redis: Já Processado?",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        528
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.propertyName }}",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "31ed5a4d-d2fa-4a92-961a-15ce56d604af",
+      "name": "Não Processado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json['redis.processed.key'] }}",
+        "value": "1"
+      },
+      "id": "399fc8f8-c755-4984-b400-2ec5ae3c382e",
+      "name": "Redis: Marcar Processado",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        512
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $json['redis.state.key'] }}",
+        "options": {}
+      },
+      "id": "537a108e-c1bb-43dc-97c4-d180d4a9e070",
+      "name": "Redis: Consultar Estado",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        512
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": [
+                {
+                  "leftValue": "={{ $json.value }}",
+                  "rightValue": ""
+                }
+              ]
+            },
+            {
+              "conditions": [
+                {
+                  "leftValue": "={{ $json.value }}",
+                  "rightValue": "aguardando_opcao"
+                }
+              ]
+            },
+            {
+              "conditions": [
+                {
+                  "leftValue": "={{ $json.value }}",
+                  "rightValue": "aguardando_descricao"
+                }
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8a46fdcb-0ad0-43c5-924b-089f11632941",
+      "name": "Switch: Estado",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -1056,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot }}api/v1/accounts/{{ $json.account.id }}/conversations/{{ $json.conversation.id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"Olá {{ $json['sender.name'] }}! Suporte TI 🛠️\\n\\nEscolha uma opção:\\n1️⃣ Computador/Hardware\\n2️⃣ Impressora\\n3️⃣ Sistemas/ERP\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "6767d103-5664-4ce5-9510-c1ffa25f0bfa",
+      "name": "Enviar Menu TI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -496,
+        144
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "v6fT7W6HPG9Uc4XU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json['redis.state.key'] }}",
+        "value": "aguardando_opcao"
+      },
+      "id": "c744ff04-7e15-4abc-808d-0dfc1db926ee",
+      "name": "Redis: Set Estado (Aguardando Opção)",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ /^([1-3])$/.test($json['content.body']) ? 'ok' : '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "ok"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dc0e1eb4-4066-4ce4-8f6f-069fb016017d",
+      "name": "Opção Válida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "category",
+              "value": "={{ $json['content.body'] === '1' ? 'Hardware' : ($json['content.body'] === '2' ? 'Impressora' : 'Sistemas') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "893c078f-1924-4682-b783-dff3f94cdf43",
+      "name": "Set Categoria",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json['redis.category.key'] }}",
+        "value": "={{ $json['category'] }}"
+      },
+      "id": "40446a60-4180-4f06-aa06-e0fd69a54b76",
+      "name": "Redis: Save Categoria",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        304
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot }}api/v1/accounts/{{ $json['account.id'] }}/conversations/{{ $json['conversation.id'] }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"📝 Por favor, descreva o problema com detalhes (ex.: equipamento, sintomas, quando começou).\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "94919cc1-eb52-4569-876c-63eacf49b1f3",
+      "name": "Perguntar Descrição",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -304,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "v6fT7W6HPG9Uc4XU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json['redis.state.key'] }}",
+        "value": "aguardando_descricao"
+      },
+      "id": "3f5ed272-f1f7-48e8-8246-9d67f4202072",
+      "name": "Redis: Set Estado (Descrição)",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        304
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot }}api/v1/accounts/{{ $json['account.id'] }}/conversations/{{ $json['conversation.id'] }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"⚠️ Opção inválida. Digite 1, 2 ou 3.\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "c3eeeeb9-f90a-4521-b2c5-c1efb2aef573",
+      "name": "Opção Inválida",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -688,
+        544
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "v6fT7W6HPG9Uc4XU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $json['redis.category.key'] }}",
+        "options": {}
+      },
+      "id": "bb9864c7-d39b-46df-b957-0e1ce5c46ce1",
+      "name": "Redis: Get Categoria",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        544
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ ($json['content.body'] || '').length >= 10 ? 'ok' : '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "ok"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e1106bf-4eb3-45bd-b4ab-fc741eb3b271",
+      "name": "Descrição Válida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "description",
+              "value": "={{ $json['content.body'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd80b1c8-6617-472b-a768-6bf9e3fedfd0",
+      "name": "Set Descrição",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot }}api/v1/accounts/{{ $json['account.id'] }}/conversations/{{ $json['conversation.id'] }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"✅ Chamado registrado!\\n\\n📂 Categoria: {{ $json['value'] }}\\n📝 Descrição: {{ $json['description'] }}\\n🔢 Protocolo: #{{ $json['conversation.id'] }}\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "0d1aea83-2faf-4519-a035-85f847f49c58",
+      "name": "Confirmar Chamado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -304,
+        576
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "v6fT7W6HPG9Uc4XU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot }}api/v1/accounts/{{ $json['account.id'] }}/conversations/{{ $json['conversation.id'] }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"⚠️ Descrição muito curta. Escreva em poucas linhas o que ocorre (mínimo 10 caracteres).\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "832a5a97-1c7e-4a1f-8915-a6e55420cdff",
+      "name": "Descrição Inválida",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -480,
+        736
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "v6fT7W6HPG9Uc4XU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json['redis.state.key'] }}",
+        "value": "aguardando_descricao"
+      },
+      "id": "256fb714-f09d-424e-9d88-2b2112060f53",
+      "name": "Redis: Permanecer (Descrição)",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        736
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "37f8a7cb-ed54-42c7-afe6-2e1714b69cd6",
+      "name": "On Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2688,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.chatwoot || $env.CHATWOOT_BASE_URL }}api/v1/accounts/{{ $json['account.id'] || $json.executionData.nodeExecutionStack[0].data.main[0][0].json['account.id'] }}/conversations/{{ $json['conversation.id'] || $json.executionData.nodeExecutionStack[0].data.main[0][0].json['conversation.id'] }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"❌ Ocorreu um erro. Digite 'menu' para recomeçar.\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "9235e5db-8679-4905-b36a-62291e986f09",
+      "name": "Notificar Erro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -2496,
+        752
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "v6fT7W6HPG9Uc4XU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json['redis.state.key'] || $json.executionData.nodeExecutionStack[0].data.main[0][0].json['redis.state.key'] }}"
+      },
+      "id": "4dad6b59-43d9-43bd-993b-282ad81441fc",
+      "name": "Redis: Reset Estado",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        752
+      ],
+      "credentials": {
+        "redis": {
+          "id": "fdGzEdoFZGLyKohp",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "É Incoming?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Incoming?": {
+      "main": [
+        [
+          {
+            "node": "Mapear Variáveis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapear Variáveis": {
+      "main": [
+        [
+          {
+            "node": "Switch: Comando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Comando": {
+      "main": [
+        [
+          {
+            "node": "Enviar Menu TI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis: Set Estado (Aguardando Opção)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Menu TI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis: Set Estado (Aguardando Opção)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis: Já Processado?": {
+      "main": [
+        [
+          {
+            "node": "Não Processado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Não Processado?": {
+      "main": [
+        [
+          {
+            "node": "Redis: Marcar Processado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis: Marcar Processado": {
+      "main": [
+        [
+          {
+            "node": "Redis: Consultar Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis: Consultar Estado": {
+      "main": [
+        [
+          {
+            "node": "Switch: Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Estado": {
+      "main": [
+        [
+          {
+            "node": "Enviar Menu TI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opção Válida?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis: Get Categoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opção Válida?": {
+      "main": [
+        [
+          {
+            "node": "Set Categoria",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opção Inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Categoria": {
+      "main": [
+        [
+          {
+            "node": "Redis: Save Categoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis: Save Categoria": {
+      "main": [
+        [
+          {
+            "node": "Perguntar Descrição",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perguntar Descrição": {
+      "main": [
+        [
+          {
+            "node": "Redis: Set Estado (Descrição)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis: Get Categoria": {
+      "main": [
+        [
+          {
+            "node": "Descrição Válida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descrição Válida?": {
+      "main": [
+        [
+          {
+            "node": "Set Descrição",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Descrição Inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Descrição": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Chamado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descrição Inválida": {
+      "main": [
+        [
+          {
+            "node": "Redis: Permanecer (Descrição)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On Error": {
+      "main": [
+        [
+          {
+            "node": "Notificar Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Erro": {
+      "main": [
+        [
+          {
+            "node": "Redis: Reset Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "05129d2bdd4cf6664cb10b1bd5cf77221e5d43d51b8c2d2cad46e245a607a7d0"
+  }
+}
