@@ -4,8 +4,7 @@
 $ErrorActionPreference = 'Stop'
 
 # Configurações
-$ip = "192.168.29.71"
-$baseUrl = "http://$ip` :3000"
+$baseUrl = "https://atendimento.projetoravenna.cloud"
 $accountId = 1
 $token = "CDuFU9XcuoXTF7uHarDFWCw3"
 $headers = @{ "api_access_token" = $token }
@@ -105,10 +104,10 @@ try {
         Write-Host "De: $attachmentUrl"
         Write-Host "Para: $target"
         
-        if ($target -match ":9004") {
-            Write-Host "✅ O destino aponta corretamente para a porta do MinIO (9004)." -ForegroundColor Green
+        if ($target -match "minio.projetoravenna.cloud") {
+            Write-Host "✅ O destino aponta corretamente para o domínio do MinIO." -ForegroundColor Green
         } else {
-            Write-Host "⚠️ O destino não parece ser o MinIO (:9004). Verifique a URL." -ForegroundColor Yellow
+            Write-Host "⚠️ O destino não parece ser o MinIO (minio.projetoravenna.cloud). Verifique a URL." -ForegroundColor Yellow
         }
     } else {
         Write-Host "❌ Falha: O Chatwoot não redirecionou. Status: $($check.StatusCode)" -ForegroundColor Red

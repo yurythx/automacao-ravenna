@@ -5,7 +5,7 @@ Este documento oficializa a configuração e o procedimento de implantação da 
 
 **Data da Versão:** 11/12/2025
 **Status:** Produção / Validado
-**IP do Servidor (Host):** `192.168.29.71`
+**IP do Servidor (Host):** `projetoravenna.cloud`
 
 ---
 
@@ -16,34 +16,33 @@ A solução é composta por serviços containerizados orquestrados via Docker Co
 *   **Evolution API v2**: Gateway de WhatsApp. Conecta ao aparelho celular e converte mensagens em Webhooks.
 *   **Chatwoot**: Plataforma de atendimento multicanal. Recebe as mensagens da Evolution API.
 *   **MinIO**: Armazenamento de objetos (S3 Compatible). Armazena anexos e mídias do Chatwoot para persistência segura e performance.
-*   **n8n**: Ferramenta de automação de fluxo (Workflow). Intermedia regras de negócio e integração com GLPI.
-*   **GLPI**: Sistema de Service Desk (consumidor final dos tickets gerados).
+*   **n8n**: Ferramenta de automação de fluxo (Workflow). Intermedia regras de negócio.
 *   **Redis & Postgres**: Serviços de infraestrutura para persistência de dados e filas.
 
 ---
 
-## 2. Configuração do Ambiente (IP 192.168.29.71)
+## 2. Configuração do Ambiente (Domínio projetoravenna.cloud)
 
-Esta implantação está padronizada para operar no IP `192.168.29.71`. Todas as referências internas e webhooks foram configurados para este endereço.
+Esta implantação está padronizada para operar no domínio `projetoravenna.cloud`. Todas as referências internas e webhooks foram configurados para este endereço.
 
 ### 2.1. Arquivos de Configuração Críticos
 
 #### A. Raiz `.env`
 Controla as variáveis globais da Evolution API e URLs base.
-*   **SERVER_URL**: `http://192.168.29.71:8081`
+*   **SERVER_URL**: `https://evolution.projetoravenna.cloud`
 
 #### B. `Chatwoot/.env`
 Controla a configuração do Chatwoot, incluindo conexão com banco, Redis e **MinIO**.
-*   **FRONTEND_URL**: `http://192.168.29.71:3000`
+*   **FRONTEND_URL**: `https://atendimento.projetoravenna.cloud`
 *   **Storage (S3/MinIO)**: Configurado com estratégia de "Variáveis Duplas" (`AWS_*` e `STORAGE_*`) para garantir compatibilidade total.
-    *   Endpoint: `http://192.168.29.71:9004`
+    *   Endpoint: `https://minio.projetoravenna.cloud`
     *   Bucket: `chatwoot`
     *   Force Path Style: `true`
 
 #### C. `n8n/compose.yaml`
 Define as URLs de callback para os webhooks do n8n.
-*   **WEBHOOK_URL**: `http://n8n:5678/` (Uso interno na rede Docker)
-*   **N8N_EDITOR_BASE_URL**: `http://192.168.29.71:5678/` (Acesso via navegador)
+*   **WEBHOOK_URL**: `https://n8n.projetoravenna.cloud/`
+*   **N8N_EDITOR_BASE_URL**: `https://n8n.projetoravenna.cloud/`
 
 ---
 
@@ -57,7 +56,7 @@ Para subir o ambiente completo (ou reiniciar após alterações de IP):
     ```
 
 2.  **Verificar configurações:**
-    Certifique-se de que os arquivos `.env` citados acima contenham o IP correto (`192.168.29.71`).
+    Certifique-se de que os arquivos `.env` citados acima contenham os domínios corretos.
 
 3.  **Criar Rede Docker:**
     A stack utiliza uma rede externa para comunicação entre os serviços. Crie-a se ainda não existir:

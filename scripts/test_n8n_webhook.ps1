@@ -1,5 +1,5 @@
 param(
-  [string]$WebhookUrl = "http://localhost:5678/webhook/havoc-ti",
+  [string]$WebhookUrl = "https://n8n.projetoravenna.cloud/webhook/havoc-ti",
   [string]$Phone = "5527999999999",
   [string]$Message = "abrir_chamado",
   [string]$Name = "Teste Script"

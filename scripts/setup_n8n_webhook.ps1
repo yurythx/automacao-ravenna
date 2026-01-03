@@ -1,5 +1,5 @@
 param(
-    [string]$EvolutionUrl = "http://192.168.29.71:8081",
+    [string]$EvolutionUrl = "https://evolution.projetoravenna.cloud",
     [string]$Instance = "Havoc",
     [string]$ApiKey = "",
     [string]$N8nUrl = "http://n8n:5678",

@@ -20,7 +20,7 @@ Estes scripts consolidam várias verificações em relatórios únicos.
 **Teste End-to-End de Armazenamento.** Valida se o fluxo de arquivos está 100% funcional.
 *   1. Cria uma conversa de teste.
 *   2. Faz upload de um arquivo (`sample_upload.txt`) via API.
-*   3. **Verifica o Redirecionamento**: Confirma se o Chatwoot está enviando o usuário para o MinIO (Porta 9004) ao acessar o anexo.
+*   3. **Verifica o Redirecionamento**: Confirma se o Chatwoot está enviando o usuário para o MinIO (Domínio) ao acessar o anexo.
 
 ---
 

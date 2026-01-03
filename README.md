@@ -1,8 +1,8 @@
 # 🚀 Stack ITSM, Monitoramento & Automação (GLPI + Zabbix + Chatwoot + Evolution API)
 
-> 🚨 **DOCUMENTAÇÃO OFICIAL DO AMBIENTE (192.168.29.71)** 🚨
+> 🚨 **DOCUMENTAÇÃO OFICIAL DO AMBIENTE (projetoravenna.cloud)** 🚨
 > 
-> Para detalhes específicos desta implantação, incluindo IPs, credenciais e scripts de validação, consulte o:
+> Para detalhes específicos desta implantação, incluindo domínios, credenciais e scripts de validação, consulte o:
 > 
 > 👉 **[MANUAL DE IMPLANTAÇÃO E OPERAÇÃO](./MANUAL_DE_IMPLANTACAO.md)** 👈
 >
@@ -198,8 +198,8 @@ Quando quiser configurar domínios (SSL/HTTPS), siga estes passos:
 | **Zabbix** | `18081` | Crie site `monitor.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:18081` |
 | **n8n** | `5678` | Crie site `n8n.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:5678` |
 | **Evolution API**| `8081` | Crie site `api.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:8081` |
-| **MinIO API** | `9004` | Crie site `s3.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:9004` |
-| **MinIO Console**| `9005` | Crie site `minio.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:9005` |
+| **MinIO API** | `9004` | Crie site `minio.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:9004` |
+| **MinIO Console**| `9005` | Crie site `console.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:9005` |
 
 
 ---
@@ -290,7 +290,7 @@ sudo ufw reload
 
 ### 3. Liberar Acesso Direto (Sem Proxy Reverso)
 
-Por padrão, esta stack vem configurada para **Produção Segura** (bind em `127.0.0.1`). Para acessar via IP direto (`http://192.168.29.71:PORTA`), remova a restrição de localhost rodando este comando na raiz do projeto:
+Por padrão, esta stack vem configurada para **Produção Segura** (bind em `127.0.0.1`). Para acessar via IP direto (`http://IP:PORTA`), remova a restrição de localhost rodando este comando na raiz do projeto:
 
 ```bash
 # Remove "127.0.0.1:" dos arquivos compose
