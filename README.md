@@ -1,4 +1,4 @@
-# 🚀 Stack ITSM, Monitoramento & Automação (GLPI + Zabbix + Chatwoot + Evolution API)
+# 🚀 Stack de Atendimento e Automação (Chatwoot + Evolution API + n8n)
 
 > 🚨 **DOCUMENTAÇÃO OFICIAL DO AMBIENTE (projetoravenna.cloud)** 🚨
 > 
@@ -8,7 +8,7 @@
 >
 > *Use o manual acima como referência primária para manutenção.*
 
-Este repositório contém a infraestrutura completa, orquestrada via Docker Compose, para uma suíte de Gestão de Serviços de TI (ITSM), Monitoramento de Infraestrutura e Atendimento Omnichannel.
+Este repositório contém a infraestrutura completa, orquestrada via Docker Compose, para uma suíte de Atendimento Omnichannel e Automação de Processos.
 
 O projeto foi desenhado para ser modular, escalável e seguro, utilizando segmentação de redes e persistência de dados.
 
@@ -31,7 +31,7 @@ O projeto foi desenhado para ser modular, escalável e seguro, utilizando segmen
 
 A infraestrutura utiliza uma **rede virtual unificada** (`stack_network`) para facilitar a comunicação entre todos os serviços, mantendo a organização lógica através da orquestração via Docker Compose.
 
-*   **`stack_network`:** Rede compartilhada por todos os componentes (GLPI, Zabbix, Chatwoot, Evolution API, MinIO e n8n), permitindo comunicação direta e eficiente via DNS interno do Docker.
+*   **`stack_network`:** Rede compartilhada por todos os componentes (Chatwoot, Evolution API, MinIO e n8n), permitindo comunicação direta e eficiente via DNS interno do Docker.
 
 O **n8n** atua como o **Hub de Integração**, orquestrando os fluxos de dados entre os serviços.
 
@@ -60,8 +60,6 @@ graph TD
         EvolAPI["📱 Evolution API<br/>(Porta: 8081)"]:::internal
         MinIO["🗄️ MinIO S3<br/>(Porta: 9004/9005)"]:::internal
         n8n["⚡ n8n Workflow<br/>(Porta: 5678)"]:::internal
-        GLPI["🛠️ GLPI<br/>(Porta: 18080)"]:::internal
-        Zabbix["📈 Zabbix Server/Web<br/>(Porta: 18081)"]:::internal
         Chatwoot["💬 Chatwoot<br/>(Porta: 3000)"]:::internal
 
         %% Bancos de Dados e Cache
@@ -69,15 +67,11 @@ graph TD
         PostgresEvol[("Postgres Evol")]:::db
         PostgresN8N[("Postgres n8n")]:::db
         RedisN8N[("Redis n8n")]:::db
-        MariaDB[("MariaDB GLPI")]:::db
-        PostgresZabbix[("Postgres Zabbix")]:::db
         PostgresChat[("Postgres Chatwoot")]:::db
         RedisChat[("Redis Chatwoot")]:::db
     end
 
     %% Conexões Externas
-    User -->|Acesso Web| GLPI
-    User -->|Acesso Web| Zabbix
     User -->|Acesso Web| Chatwoot
     User -->|Acesso Web| n8n
     User -->|Acesso Web| MinIO
@@ -90,45 +84,31 @@ graph TD
     
     n8n -->|Orquestração| EvolAPI
     n8n -->|API| Chatwoot
-    n8n -->|API| GLPI
-    n8n -->|Webhooks| Zabbix
     n8n --> PostgresN8N
     n8n --> RedisN8N
 
     Chatwoot --> PostgresChat
     Chatwoot --> RedisChat
     Chatwoot -.->|Armazenamento| MinIO
-
-    GLPI --> MariaDB
-    Zabbix --> PostgresZabbix
 ```
 
 ---
 
 ## 🧩 Componentes da Stack
 
-### 1. **GLPI (v11.0.1)**
-*   **Função:** Service Desk, Gestão de Ativos (CMDB) e Rastreamento de Problemas.
-*   **Imagem:** `glpi/glpi:11.0.1`
-*   **Banco:** MariaDB 10.11
-
-### 2. **Chatwoot (v4.8.0)**
+### 1. **Chatwoot (v4.8.0)**
 *   **Função:** Plataforma de atendimento ao cliente (Live Chat, WhatsApp, Email).
 *   **Imagem:** `chatwoot/chatwoot:v4.8.0` (Edição Community)
 *   **Recursos:** Suporte a `pgvector` para funcionalidades de IA.
 
-### 3. **Zabbix (v7.0 LTS)**
-*   **Função:** Monitoramento de redes, servidores e aplicações em tempo real.
-*   **Imagem:** Alpine based (leve e segura).
-
-### 4. **Evolution API (Latest)**
+### 2. **Evolution API (Latest)**
 *   **Função:** Gateway para conexão com o WhatsApp (baseado na biblioteca Baileys).
 *   **Recursos:** Multi-sessão, envio de mídia, webhooks.
 
-### 5. **n8n**
+### 3. **n8n**
 *   **Função:** Orquestrador de automação "Low-code". Conecta todos os serviços acima.
 
-### 6. **MinIO**
+### 4. **MinIO**
 *   **Função:** Object Storage compatível com S3.
 *   **Uso:** Armazenamento centralizado de arquivos (anexos do Chatwoot, backups).
 
@@ -143,7 +123,7 @@ Para rodar esta stack, seu servidor deve atender aos requisitos mínimos:
 *   **Docker Compose:** Versão 2.20+
 *   **Hardware Recomendado:**
     *   **CPU:** 4 vCPUs
-    *   **RAM:** 8GB+ (O Zabbix e GLPI juntos consomem consideravelmente, e o Java do Elasticsearch [se adicionado futuramente] demandaria mais).
+    *   **RAM:** 4GB+ (Recomendado para rodar Chatwoot + Evolution + n8n com folga).
     *   **Disco:** 50GB SSD livre.
 
 ---
@@ -154,8 +134,8 @@ Para rodar esta stack, seu servidor deve atender aos requisitos mínimos:
 
 1.  Clone este repositório:
     ```bash
-    git clone https://github.com/seu-usuario/GLPI-EVOLUTION-ZABBIX.git
-    cd GLPI-EVOLUTION-ZABBIX
+    git clone https://github.com/seu-usuario/RAVENNA-STACK.git
+    cd RAVENNA-STACK
     ```
 
 2.  Configure as variáveis de ambiente:
@@ -193,11 +173,9 @@ Quando quiser configurar domínios (SSL/HTTPS), siga estes passos:
 
 | Serviço | Porta Local | Configuração no aaPanel |
 | :--- | :--- | :--- |
-| **Chatwoot** | `3000` | Crie site `chat.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:3000` |
-| **GLPI** | `18080` | Crie site `suporte.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:18080` |
-| **Zabbix** | `18081` | Crie site `monitor.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:18081` |
-| **n8n** | `5678` | Crie site `n8n.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:5678` |
-| **Evolution API**| `8081` | Crie site `api.seudominio.com` > Config > Reverse Proxy > Target: `http://127.0.0.1:8081` |
+| **Chatwoot** | `3000` | Crie site `atendimento.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:3000` |
+| **n8n** | `5678` | Crie site `n8n.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:5678` |
+| **Evolution API**| `8081` | Crie site `evolution.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:8081` |
 | **MinIO API** | `9004` | Crie site `minio.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:9004` |
 | **MinIO Console**| `9005` | Crie site `console.projetoravenna.cloud` > Config > Reverse Proxy > Target: `http://127.0.0.1:9005` |
 

@@ -17,8 +17,8 @@ Disponibilizamos um script PowerShell para realizar essa configuração automati
 **Localização:** `scripts/force_add_webhook.ps1`
 
 **O que o script faz:**
-1.20→1. Conecta na API do Chatwoot (`https://atendimento.projetoravenna.cloud`).
-21→2. Autentica com o token do administrador.
+1. Conecta na API do Chatwoot (`https://atendimento.projetoravenna.cloud`).
+2. Autentica com o token do administrador.
 3. Envia uma requisição POST forçando a URL interna: `http://n8n:5678/webhook/n8n`.
 4. Assina os eventos: `conversation_created`, `message_created`, `message_updated`, etc.
 
@@ -31,7 +31,7 @@ scripts/force_add_webhook.ps1
 Se preferir fazer manualmente via terminal/cURL:
 
 ```bash
-curl -X POST "http://192.168.29.71:3000/api/v1/accounts/1/webhooks" \
+curl -X POST "https://atendimento.projetoravenna.cloud/api/v1/accounts/1/webhooks" \
 -H "Content-Type: application/json" \
 -H "api_access_token: SEU_TOKEN_AQUI" \
 -d '{

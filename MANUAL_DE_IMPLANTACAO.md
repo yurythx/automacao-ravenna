@@ -1,5 +1,5 @@
 # Manual de Implantação e Operação
-## Stack de Atendimento e Automação: Chatwoot, Evolution API, MinIO, n8n, GLPI
+## Stack de Atendimento e Automação: Chatwoot, Evolution API, MinIO, n8n
 
 Este documento oficializa a configuração e o procedimento de implantação da solução integrada de atendimento via WhatsApp.
 

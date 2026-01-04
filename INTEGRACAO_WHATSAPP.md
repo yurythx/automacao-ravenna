@@ -1,4 +1,4 @@
-# 📱 Guia de Integração: WhatsApp (Evolution API) -> Chatwoot -> n8n -> GLPI
+# 📱 Guia de Integração: WhatsApp (Evolution API) -> Chatwoot -> n8n
 
 ## Produção (Ubuntu + aapanel)
 
@@ -8,13 +8,13 @@
   - Domínio configurado no aapanel com SSL (Let's Encrypt) e reverse proxy
 
 - Ajustes de `.env` (raiz):
-  - `SERVER_URL=https://SEU_DOMINIO_API` (Evolution)
+  - `SERVER_URL=https://evolution.projetoravenna.cloud` (Evolution)
   - `AUTHENTICATION_API_KEY` defina um segredo forte
   - `POSTGRES_PASSWORD` e `REDIS_PASSWORD` fortes
-  - N8N: defina `N8N_BASIC_AUTH_*` e mude `WEBHOOK_URL`/`N8N_EDITOR_BASE_URL` para `https://SEU_DOMINIO_N8N/`
+  - N8N: defina `N8N_BASIC_AUTH_*` e mude `WEBHOOK_URL`/`N8N_EDITOR_BASE_URL` para `https://n8n.projetoravenna.cloud/`
 
 - Chatwoot (`Chatwoot/.env`):
-  - `FRONTEND_URL=https://SEU_DOMINIO_CHATWOOT`
+  - `FRONTEND_URL=https://atendimento.projetoravenna.cloud`
   - `FORCE_SSL=true`
   - `SECRET_KEY_BASE` forte
 
@@ -22,8 +22,6 @@
   - Chatwoot → proxy para `http://127.0.0.1:3000`
   - Evolution API → `http://127.0.0.1:8081`
   - n8n → `http://127.0.0.1:5678`
-  - GLPI → `http://127.0.0.1:18080`
-  - Zabbix Web → `http://127.0.0.1:18081`
   - MinIO Console → `http://127.0.0.1:9005`
 
 - Subir stack:
@@ -43,7 +41,6 @@
 - Integrações:
   - Evolution → Chatwoot: já configurado em `evolution/compose.yaml` (`CHATWOOT_URL=http://chatwoot_web:3000`)
   - Chatwoot → n8n: use `http://n8n:5678/webhook/...` na automação
-  - n8n → GLPI: configure credenciais e endpoints no workflow
 
 - Segurança:
   - Troque todos os segredos padrão no `.env`
@@ -54,7 +51,7 @@
 
 - Criar instância e gerar QR → parear WhatsApp
 - Enviar mensagem WhatsApp → chega ao Chatwoot
-- Disparar fluxo n8n via webhook → criar/atualizar ticket no GLPI
+- Disparar fluxo n8n via webhook → executar automação
 
 ## Troubleshooting
 
@@ -67,11 +64,11 @@
   - Mantenha `CONFIG_SESSION_PHONE_CLIENT/NAME=Chrome` e não defina versão
 
 
-Este guia detalha o processo para configurar a comunicação entre o WhatsApp (via Evolution API), a plataforma de atendimento Chatwoot e o orquestrador n8n. O objetivo final é permitir que mensagens recebidas via WhatsApp possam abrir tickets automaticamente no GLPI ou serem tratadas por agentes humanos.
+Este guia detalha o processo para configurar a comunicação entre o WhatsApp (via Evolution API), a plataforma de atendimento Chatwoot e o orquestrador n8n. O objetivo final é permitir que mensagens recebidas via WhatsApp possam ser tratadas por automações ou agentes humanos.
 
 # 📱 Esquema de Configuração da Automação (Chatwoot -> n8n)
 
- A chave do sucesso é usar o **endereço interno** (nome do serviço) para a comunicação entre containers e o **endereço externo** (192.168.29.71) onde for necessário (como na criação da URL do n8n para visualização).
+ A chave do sucesso é usar o **endereço interno** (nome do serviço) para a comunicação entre containers e o **endereço externo** (projetoravenna.cloud) onde for necessário (como na criação da URL do n8n para visualização).
 
 ---
 
@@ -95,8 +92,8 @@ O n8n precisa gerar a URL que o Chatwoot chamará.
 1.  Crie um Workflow no n8n.
 2.  Adicione o nó **Webhook**.
     *   **Method:** POST.
-    *   **Endpoint URL:** Deixe o n8n gerar a URL. Ela será similar a: `http://192.168.29.71:5678/webhook/SEU_ID_UNICO`
-    *   *Nota: O n8n usará o IP externo configurado (192.168.29.71) pois definimos `WEBHOOK_URL` no compose.*
+    *   **Endpoint URL:** Deixe o n8n gerar a URL. Ela será similar a: `https://n8n.projetoravenna.cloud/webhook/SEU_ID_UNICO`
+    *   *Nota: O n8n usará o domínio configurado (projetoravenna.cloud) pois definimos `WEBHOOK_URL` no compose.*
 
 ### 2.2. Obter a URL Interna para o Chatwoot
 A URL do passo 2.1 é a URL pública (para acesso externo). No entanto, quando configurarmos o Chatwoot, **devemos modificar o host** para usar o endereço interno do Docker:

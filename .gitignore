@@ -1,0 +1,24 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Docker Data & Logs
+**/data/
+**/logs/
+**/postgres_data/
+**/redis_data/
+**/minio_data/
+**/elasticsearch_data/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Temporary Scripts
+*.log

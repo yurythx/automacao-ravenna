@@ -15,7 +15,7 @@ Esta configuração foi validada e está funcional em ambiente Docker.
 Certifique-se de que o serviço MinIO esteja rodando e acessível.
 No arquivo `minio/compose.yaml`, a porta da API S3 deve estar exposta (ex: `9004:9000`).
 
-- **URL Externa**: `http://192.168.29.71:9004` (IP da máquina host)
+- **URL Externa**: `https://minio.projetoravenna.cloud` (Domínio HTTPS)
 - **Usuário (Access Key)**: `minioadmin`
 - **Senha (Secret Key)**: `minioadmin`
 - **Bucket**: `chatwoot`
@@ -35,20 +35,20 @@ S3_BUCKET_NAME=chatwoot
 AWS_ACCESS_KEY_ID=minioadmin
 AWS_SECRET_ACCESS_KEY=minioadmin
 AWS_REGION=us-east-1
-AWS_S3_ENDPOINT=http://192.168.29.71:9004
+AWS_S3_ENDPOINT=https://minio.projetoravenna.cloud
 AWS_S3_FORCE_PATH_STYLE=true
 
 # Aliases para compatibilidade específica do Chatwoot/Rails
 STORAGE_ACCESS_KEY_ID=minioadmin
 STORAGE_SECRET_ACCESS_KEY=minioadmin
 STORAGE_REGION=us-east-1
-STORAGE_ENDPOINT=http://192.168.29.71:9004
+STORAGE_ENDPOINT=https://minio.projetoravenna.cloud
 STORAGE_BUCKET_NAME=chatwoot
 STORAGE_FORCE_PATH_STYLE=true
 ```
 
 ### Pontos de Atenção:
-1.  **ENDPOINT**: Deve ser o IP da máquina host (`http://192.168.29.71:9004`), **não** use `http://minio:9000` se o Chatwoot precisar gerar URLs públicas para o navegador do usuário, pois o navegador não consegue resolver `minio`.
+1.  **ENDPOINT**: Deve ser o domínio HTTPS (`https://minio.projetoravenna.cloud`), **não** use `http://minio:9000` se o Chatwoot precisar gerar URLs públicas para o navegador do usuário, pois o navegador não consegue resolver `minio`.
 2.  **FORCE_PATH_STYLE**: Deve ser `true`. O MinIO requer isso para funcionar corretamente com buckets no formato `host/bucket` em vez de `bucket.host`.
 3.  **Reinício**: Após alterar o `.env`, é necessário recriar o container para aplicar as mudanças:
     ```bash
@@ -72,14 +72,14 @@ Simula o envio de um anexo para uma conversa no Chatwoot.
 ### Script de Verificação de Redirecionamento (`scripts/check_single_redirect.ps1`)
 Verifica se a URL do anexo gerada pelo Chatwoot redireciona corretamente para o MinIO.
 - O Chatwoot gera URLs assinadas que apontam para ele mesmo (`/rails/active_storage/...`).
-- Ao acessar essa URL, ele deve responder com `302 Found` e o cabeçalho `Location` apontando para `http://192.168.29.71:9004/...`.
+- Ao acessar essa URL, ele deve responder com `302 Found` e o cabeçalho `Location` apontando para `https://minio.projetoravenna.cloud/...`.
 
 ## 5. Troubleshooting Comum
 
 | Sintoma | Causa Provável | Solução |
 |---------|----------------|---------|
 | Erro 422 ao enviar arquivo | Chatwoot não consegue autenticar no S3 | Verifique `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY`. Reinicie o container. |
-| Arquivo envia, mas não abre (404/Erro de Rede) | URL gerada aponta para `minio:9000` ou `localhost` | Ajuste `AWS_S3_ENDPOINT` para o IP da LAN (`192.168.29.71`). |
+| Arquivo envia, mas não abre (404/Erro de Rede) | URL gerada aponta para `minio:9000` ou `localhost` | Ajuste `AWS_S3_ENDPOINT` para o domínio (`https://minio.projetoravenna.cloud`). |
 | Erro `SignatureDoesNotMatch` | Credenciais erradas ou hora do servidor dessincronizada | Verifique credenciais. Garanta que servidor e cliente estejam com relógios sincronizados. |
 
 ---

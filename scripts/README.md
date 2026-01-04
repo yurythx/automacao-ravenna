@@ -2,7 +2,7 @@
 
 Esta pasta contém scripts PowerShell para validar, testar e configurar a integração da stack (Chatwoot, MinIO, Evolution API, n8n).
 
-> **Nota:** Todos os scripts estão configurados para o IP **192.168.29.71**.
+> **Nota:** Todos os scripts estão configurados para o domínio **projetoravenna.cloud**.
 
 ## � Scripts Principais (Use estes primeiro)
 
