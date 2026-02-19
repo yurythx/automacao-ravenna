@@ -1,6 +1,6 @@
 services:
   base: &base
-    image: chatwoot/chatwoot:v4.8.0
+    image: chatwoot/chatwoot:v4.11.0
     profiles: ["donotstart"]
     env_file: .env
     environment:
